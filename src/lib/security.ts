@@ -23,9 +23,19 @@ export function clientIp(req: Request) {
 export function assertSameOrigin(req: Request) {
   const origin = req.headers.get("origin");
   if (!origin) return true;
-  const allowed = process.env.APP_URL || "http://localhost:3000";
   try {
-    return new URL(origin).origin === new URL(allowed).origin || origin.includes("localhost");
+    const originUrl = new URL(origin);
+    if (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1") return true;
+
+    const forwardedHost = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "")
+      .split(",")[0]
+      ?.trim();
+    if (forwardedHost && originUrl.host === forwardedHost) return true;
+
+    const extra = [process.env.APP_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL]
+      .filter(Boolean)
+      .map((value) => (value!.startsWith("http") ? value! : `https://${value}`));
+    return extra.some((allowed) => originUrl.origin === new URL(allowed).origin);
   } catch {
     return false;
   }
