@@ -5,6 +5,13 @@ async function run() {
   if (process.env.VERCEL !== "1" && process.env.SEED_ON_BUILD !== "1") {
     return;
   }
+  const url =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL_UNPOOLED;
+  if (url && !process.env.DATABASE_URL) process.env.DATABASE_URL = url;
   if (!process.env.DATABASE_URL) {
     console.error("DATABASE_URL is missing. Add it in Vercel → Settings → Environment Variables.");
     process.exit(1);
