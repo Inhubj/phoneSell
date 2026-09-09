@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build",
+    "build": "node scripts/use-prod-db-provider.mjs && prisma generate && prisma db push && tsx scripts/ensure-prod-seed.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && tsx prisma/seed.ts",
     "db:backup": "node scripts/backup-db.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "node scripts/use-prod-db-provider.mjs && prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

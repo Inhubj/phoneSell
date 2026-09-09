@@ -50,9 +50,28 @@ Marketing, FAQ and SEO pages stay public. `/sell` and `/account` require a verif
 
 Roles: Super Admin (full), Operations (orders/customers/pickup), Catalogue (models/Others), Reporting (analytics/export).
 
+## Deploy on Vercel
+
+SQLite (`file:./dev.db`) only works on your laptop. Vercel serverless has no disk, so the homepage crashes with `Environment variable not found: DATABASE_URL` until you attach **Postgres**.
+
+1. Create a free database: [Neon](https://console.neon.tech) or **Vercel Dashboard → Storage → Create Database → Neon / Postgres**.
+2. Copy the connection string (`postgresql://…?sslmode=require`). Prefer Neon’s **pooled** URL for queries.
+3. In the Vercel project: **Settings → Environment Variables** (Production, Preview, and Development), add:
+
+| Name | Value |
+| --- | --- |
+| `DATABASE_URL` | your Postgres URL |
+| `AUTH_SECRET` | a long random string (not the local default) |
+| `APP_URL` | `https://phone-sell-lake.vercel.app` (your live domain) |
+| `OTP_BYPASS_DEV` | `false` |
+
+4. Redeploy (**Deployments → … → Redeploy**). The build runs `prisma db push` and seeds the catalogue if the database is empty.
+
+Local development stays on SQLite. Do not put `file:./dev.db` on Vercel.
+
 ## Production notes
 
-- Set `AUTH_SECRET`, `APP_URL` (HTTPS), `DATABASE_URL` (Postgres recommended).
+- Set `AUTH_SECRET`, `APP_URL` (HTTPS), `DATABASE_URL` (Postgres on Vercel).
 - Put the site behind HTTPS. Security headers are set in `next.config.ts`.
 - Run `npm run db:backup` (or a scheduled copy of the database) before releases.
 - Point `public/uploads` to object storage.
