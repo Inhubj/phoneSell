@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Logo } from "@/components/layout/Logo";
 import { PasswordField } from "./PasswordField";
 
-export function LoginForm({ title, hint, executiveHref }: { title: string; hint: string; executiveHref?: boolean }) {
+export function LoginForm({ title, hint, executiveHref }: { title: string; hint?: string; executiveHref?: boolean }) {
   const router = useRouter();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +46,7 @@ export function LoginForm({ title, hint, executiveHref }: { title: string; hint:
       <form onSubmit={submit} className="glass relative w-full max-w-md rounded-3xl p-8">
         <Logo />
         <h1 className="font-display mt-6 text-3xl">{title}</h1>
-        <p className="mt-2 text-sm text-muted">{hint}</p>
+        {hint ? <p className="mt-2 text-sm text-muted">{hint}</p> : null}
         {error && <p className="mt-4 text-sm text-red-700">{error}</p>}
         <input className="mt-6 w-full rounded-2xl border px-4 py-3" placeholder="Email / username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
         <div className="mt-3">
