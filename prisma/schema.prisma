@@ -1,0 +1,645 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  username        String   @unique
+  passwordHash    String
+  name            String
+  phone           String   @default("")
+  role            String   @default("ADMIN")
+  isActive        Boolean  @default(true)
+  twoFactorOn     Boolean  @default(false)
+  permissionsJson String   @default("[]")
+  sessionVersion  Int      @default(0)
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  auditLogs    AuditLog[]
+  assignments  ExecutiveAssignment[] @relation("AssignedBy")
+  notifications Notification[] @relation("NotificationActor")
+
+  @@map("admin_users")
+}
+
+model Customer {
+  id           String    @id @default(cuid())
+  fullName     String    @default("")
+  mobile       String    @default("")
+  alternate    String?
+  email        String    @default("")
+  loginMethod  String    @default("")
+  firstLoginAt DateTime?
+  lastLoginAt  DateTime?
+  loginCount   Int       @default(0)
+  passwordHash String?
+  lastIp       String?
+  userAgent    String?
+  status       String    @default("ACTIVE")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  orders        Order[]
+  loginEvents   LoginEvent[]
+  customDevices CustomDevice[]
+  diagnoses     DeviceDiagnosis[]
+
+  @@index([mobile])
+  @@index([email])
+  @@map("customers")
+}
+
+model LoginEvent {
+  id          String   @id @default(cuid())
+  customerId  String?
+  loginMethod String
+  loginStatus String
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([loginMethod])
+  @@map("login_events")
+}
+
+model VisitorEvent {
+  id         String   @id @default(cuid())
+  visitorId  String
+  customerId String?
+  eventType  String
+  path       String?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([visitorId])
+  @@index([eventType, createdAt])
+  @@map("visitor_events")
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  logoUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  devices Device[]
+
+  @@map("brands")
+}
+
+model Device {
+  id            String   @id @default(cuid())
+  brandId       String
+  name          String
+  slug          String
+  series        String?
+  launchYear    Int?
+  originalPrice Int?
+  imageUrl      String?
+  isIos         Boolean  @default(false)
+  deviceType    String   @default("PHONE")
+  processor     String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  brand    Brand           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  variants DeviceVariant[]
+  orders   Order[]
+
+  @@index([deviceType])
+
+  @@unique([brandId, slug])
+  @@index([name])
+  @@map("devices")
+}
+
+model DeviceVariant {
+  id            String   @id @default(cuid())
+  deviceId      String
+  ramGb         Int
+  storageGb     Int
+  colour         String   @default("Standard")
+  processor      String?
+  networkVariant String?
+  originalPrice  Int?
+  isActive       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  device  Device         @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  pricing DevicePricing?
+  bands   PricingBand[]
+  orders  Order[]
+
+  @@unique([deviceId, ramGb, storageGb, colour])
+  @@map("device_variants")
+}
+
+model DevicePricing {
+  id             String    @id @default(cuid())
+  variantId      String    @unique
+  basePrice      Int
+  isActive       Boolean   @default(true)
+  isPromotional  Boolean   @default(false)
+  effectiveFrom  DateTime?
+  effectiveTo    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  variant DeviceVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@map("device_pricing")
+}
+
+model PricingBand {
+  id            String    @id @default(cuid())
+  variantId     String
+  conditionLabel String
+  price         Int
+  isActive      Boolean   @default(true)
+  isPromotional Boolean   @default(false)
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  variant DeviceVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, conditionLabel])
+  @@map("pricing_bands")
+}
+
+model PricingHistory {
+  id             String   @id @default(cuid())
+  entityType     String
+  entityId       String
+  deviceLabel    String   @default("")
+  configuration  String   @default("")
+  conditionLabel String   @default("")
+  oldPrice       Int
+  newPrice       Int
+  changedBy      String
+  reason         String?
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+
+  @@index([entityId, createdAt])
+  @@map("pricing_history")
+}
+
+model DeviceCondition {
+  id          String   @id @default(cuid())
+  category    String
+  key         String   @unique
+  label       String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  @@map("device_conditions")
+}
+
+model PricingRule {
+  id         String   @id @default(cuid())
+  category   String
+  key        String   @unique
+  label      String
+  amount     Int
+  isPercent  Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("pricing_rules")
+}
+
+model ServiceArea {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  slug            String   @unique
+  city            String
+  state           String   @default("Maharashtra")
+  pincode         String   @default("")
+  pickupCharge    Int      @default(0)
+  serviceCharge   Int      @default(0)
+  minOrderValue   Int      @default(0)
+  etaHours        Int      @default(24)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  addresses  PickupAddress[]
+  executives PickupExecutive[]
+  coverage   ExecutiveCoverage[]
+
+  @@map("service_areas")
+}
+
+model PickupSlot {
+  id        String   @id @default(cuid())
+  label     String
+  startTime String
+  endTime   String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  orders Order[]
+
+  @@map("pickup_slots")
+}
+
+model PickupExecutive {
+  id                  String    @id @default(cuid())
+  name                String
+  mobile              String    @unique
+  email               String    @unique
+  employeeId          String    @unique
+  passwordHash        String?
+  areaId              String?
+  isActive            Boolean   @default(true)
+  sessionVersion      Int       @default(0)
+  lat                 Float?
+  lng                 Float?
+  locationUpdatedAt   DateTime?
+  locationPermission  String    @default("UNKNOWN")
+  lastSeenAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  area         ServiceArea?           @relation(fields: [areaId], references: [id])
+  assignments  ExecutiveAssignment[]
+  coverage     ExecutiveCoverage[]
+
+  @@map("pickup_executives")
+}
+
+model ExecutiveCoverage {
+  executiveId String
+  areaId      String
+  executive   PickupExecutive @relation(fields: [executiveId], references: [id], onDelete: Cascade)
+  area        ServiceArea     @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  @@id([executiveId, areaId])
+  @@map("executive_coverage")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model CustomerOtp {
+  id         String   @id @default(cuid())
+  mobile     String   @default("")
+  identifier String   @default("")
+  channel    String   @default("MOBILE")
+  purpose    String   @default("LOGIN")
+  codeHash   String
+  expiresAt  DateTime
+  verified   Boolean  @default(false)
+  attempts   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, channel])
+  @@index([mobile])
+  @@map("customer_otps")
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  orderNumber      String   @unique
+  customerId       String
+  brandId          String?
+  deviceId         String?
+  variantId        String?
+  deviceType       String   @default("PHONE")
+  status           String   @default("NEW_LEAD")
+  pickupStatus     String   @default("PENDING")
+  paymentStatus    String   @default("PENDING")
+  estimatedPrice   Int
+  currentPrice     Int      @default(0)
+  inspectionAdj    Int      @default(0)
+  finalPrice       Int?
+  source           String   @default("WEBSITE")
+  conditionSummary String
+  conditionJson    String
+  extrasJson       String
+  batteryNote      String?
+  customerDecision String?
+  pickupDate       DateTime?
+  pickupSlotId     String?
+  notes            String?
+  cancelledReason  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  completedAt      DateTime?
+
+  customer      Customer               @relation(fields: [customerId], references: [id])
+  device        Device?                @relation(fields: [deviceId], references: [id])
+  variant       DeviceVariant?         @relation(fields: [variantId], references: [id])
+  pickupSlot    PickupSlot?            @relation(fields: [pickupSlotId], references: [id])
+  address       PickupAddress?
+  items         OrderItem[]
+  photos        DevicePhoto[]
+  assignment    ExecutiveAssignment?
+  inspection    DeviceInspection?
+  payments      Payment[]
+  notifications Notification[]
+  customDevice  CustomDevice?
+  statusHistory OrderStatusHistory[]
+  priceHistory  OrderPriceHistory[]
+  diagnosis     DeviceDiagnosis?
+
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  label     String
+  quantity  Int    @default(1)
+  unitPrice Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model PickupAddress {
+  id         String  @id @default(cuid())
+  orderId    String  @unique
+  building   String
+  flatNumber String
+  street     String
+  area       String
+  city       String
+  pincode    String
+  landmark   String?
+  areaId     String?
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  serviceArea ServiceArea? @relation(fields: [areaId], references: [id])
+
+  @@map("pickup_addresses")
+}
+
+model ExecutiveAssignment {
+  id           String   @id @default(cuid())
+  orderId      String   @unique
+  executiveId  String
+  assignedById String?
+  assignedAt   DateTime @default(now())
+  notes        String?
+
+  order      Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  executive  PickupExecutive  @relation(fields: [executiveId], references: [id])
+  assignedBy User?            @relation("AssignedBy", fields: [assignedById], references: [id])
+
+  @@map("executive_assignments")
+}
+
+model DeviceInspection {
+  id                 String   @id @default(cuid())
+  orderId            String   @unique
+  imei1              String?
+  imei2              String?
+  serialNumber       String?
+  actualRam          Int?
+  actualStorage      Int?
+  batteryHealth      String?
+  screenCondition    String?
+  bodyCondition      String?
+  cameraCondition    String?
+  speaker            String?
+  microphone         String?
+  chargingPort       String?
+  biometric          String?
+  network            String?
+  wifi               String?
+  bluetooth          String?
+  waterDamage        String?
+  previousRepair     String?
+  displayReplacement String?
+  batteryReplacement String?
+  accessories        String?
+  imeiVerified       String?
+  finalResult        String?
+  notes              String?
+  photosJson         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([imei1])
+  @@map("device_inspections")
+}
+
+model DevicePhoto {
+  id        String   @id @default(cuid())
+  orderId   String
+  kind      String
+  url       String
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("device_photos")
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  method        String
+  amount        Int
+  reference     String?
+  status        String   @default("PENDING")
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  orderId     String?
+  actorId     String?
+  channel     String
+  eventType   String
+  recipient   String
+  subject     String?
+  body        String
+  status      String   @default("QUEUED")
+  provider    String   @default("console")
+  error       String?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  actor User?  @relation("NotificationActor", fields: [actorId], references: [id])
+
+  @@map("notifications")
+}
+
+model NotificationConfig {
+  id        String   @id @default(cuid())
+  channel   String   @unique
+  provider  String
+  isEnabled Boolean  @default(false)
+  configJson String  @default("{}")
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_configs")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metaJson  String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+model CustomDevice {
+  id              String   @id @default(cuid())
+  customerId      String
+  orderId         String   @unique
+  brand           String
+  model           String
+  deviceType      String   @default("PHONE")
+  ram             String   @default("")
+  storage         String   @default("")
+  processor       String   @default("")
+  configuration   String   @default("")
+  colour          String   @default("")
+  purchaseYear    String   @default("")
+  conditionNote   String   @default("")
+  imeiOrSerial    String   @default("")
+  description     String   @default("")
+  photosJson      String   @default("[]")
+  approvalStatus  String   @default("PENDING")
+  catalogDeviceId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([approvalStatus])
+  @@map("custom_devices")
+}
+
+model OrderStatusHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  oldStatus String
+  newStatus String
+  changedBy String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+model OrderPriceHistory {
+  id        String   @id @default(cuid())
+  orderId   String
+  oldPrice  Int
+  newPrice  Int
+  changedBy String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_price_history")
+}
+
+model OrderSequence {
+  year Int @id
+  last Int @default(0)
+
+  @@map("order_sequences")
+}
+
+model DeviceDiagnosis {
+  id               String    @id @default(cuid())
+  customerId       String
+  orderId          String?   @unique
+  status           String    @default("STARTED")
+  consentJson      String    @default("{}")
+  detectionJson    String    @default("{}")
+  capabilitiesJson String    @default("{}")
+  testsJson        String    @default("[]")
+  conditionJson    String    @default("{}")
+  extrasJson       String    @default("{}")
+  batteryJson      String    @default("{}")
+  imei             String    @default("")
+  imeiLast4        String    @default("")
+  serialNumber     String    @default("")
+  aiAssessmentJson String    @default("{}")
+  quoteJson        String    @default("{}")
+  issuesJson       String    @default("[]")
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  customer Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order?           @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  events   DiagnosisEvent[]
+
+  @@index([customerId])
+  @@map("device_diagnoses")
+}
+
+model DiagnosisEvent {
+  id          String   @id @default(cuid())
+  diagnosisId String
+  step        String
+  source      String
+  label       String
+  detailJson  String   @default("{}")
+  createdAt   DateTime @default(now())
+
+  diagnosis DeviceDiagnosis @relation(fields: [diagnosisId], references: [id], onDelete: Cascade)
+
+  @@index([diagnosisId, createdAt])
+  @@map("diagnosis_events")
+}
