@@ -202,8 +202,6 @@ export const DIAGNOSIS_CONDITION = [
 export const DIAGNOSIS_PHOTOS = [
   { key: "front", label: "Front of phone", required: true, hint: "Front screen, full phone visible" },
   { key: "back", label: "Back of phone", required: true, hint: "Back panel, camera module, overall condition" },
-  { key: "top", label: "Top", required: false, hint: "Optional side photo" },
-  { key: "bottom", label: "Bottom", required: false, hint: "Optional side photo" },
   { key: "left", label: "Left", required: false, hint: "Optional side photo" },
   { key: "right", label: "Right", required: false, hint: "Optional side photo" },
 ] as const;

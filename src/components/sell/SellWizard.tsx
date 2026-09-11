@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ANDROID_BATTERY, CONDITION_STEPS, EXTRA_QUESTIONS, IOS_BATTERY } from "@/lib/conditions";
 import { BUSINESS, PHOTO_KINDS, PRICE_DISCLAIMER, SHORT_DISCLAIMER } from "@/lib/constants";
 import { DiagnoseWizard } from "./DiagnoseWizard";
+import { PhotoPicker } from "./PhotoPicker";
 import { CountUp } from "@/components/ui/CountUp";
 import { SellLoginOverlay } from "./SellLoginOverlay";
 
@@ -571,19 +572,15 @@ export function SellWizard() {
           <p className="mt-2 text-sm text-muted">Use camera capture or gallery upload. Front, back and screen are required.</p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {PHOTO_KINDS.map((kind) => (
-              <label key={kind.key} className="rounded-2xl border border-dashed border-navy/20 p-4">
+              <div key={kind.key} className="rounded-2xl border border-dashed border-navy/20 p-4">
                 <div className="font-semibold">
                   {kind.label} {kind.required ? "*" : "(optional)"}
                 </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="mt-3 text-sm"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
+                <PhotoPicker
+                  disabled={busy}
+                  onFile={async (file) => {
                     setBusy(true);
+                    setError("");
                     try {
                       await uploadPhoto(kind.key, file);
                     } catch (err) {
@@ -597,7 +594,7 @@ export function SellWizard() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={photos.find((p) => p.kind === kind.key)!.url} alt={kind.label} className="mt-3 h-28 w-full rounded-xl object-cover" />
                 )}
-              </label>
+              </div>
             ))}
           </div>
           <div className="mt-6 flex gap-3">

@@ -14,12 +14,17 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file");
   if (!(file instanceof File)) return NextResponse.json({ error: "Missing file" }, { status: 400 });
-  if (file.size > 6 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 6MB)" }, { status: 400 });
-  if (file.type && !ALLOWED.has(file.type) && !file.type.startsWith("image/")) {
+  if (file.size > 12 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 12MB)" }, { status: 400 });
+  const type = (file.type || "").toLowerCase();
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  const allowedExt = ["jpg", "jpeg", "png", "webp", "heic", "heif", ""];
+  if (type && !type.startsWith("image/") && !ALLOWED.has(type)) {
+    return NextResponse.json({ error: "Only images are allowed" }, { status: 400 });
+  }
+  if (!type && ext && !allowedExt.includes(ext)) {
     return NextResponse.json({ error: "Only images are allowed" }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const safeExt = ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(ext) ? ext : "jpg";
   const filename = `${Date.now()}-${randomUUID()}.${safeExt}`;
   const dir = path.join(process.cwd(), "public", "uploads");

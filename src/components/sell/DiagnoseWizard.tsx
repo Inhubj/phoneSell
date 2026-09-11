@@ -23,6 +23,7 @@ import {
 import { assessPhotoUrl, combineAssessments } from "@/lib/photo-assess";
 import { CountUp } from "@/components/ui/CountUp";
 import { CameraStep } from "./diagnose/CameraStep";
+import { PhotoPicker } from "./PhotoPicker";
 import { AudioStep } from "./diagnose/AudioStep";
 import { ScreenStep, TouchStep } from "./diagnose/ScreenTouch";
 import { BatteryStep, GpsStep, HardwareStep, NetworkStep } from "./diagnose/AssistedSteps";
@@ -636,20 +637,16 @@ export function DiagnoseWizard({ onExit }: { onExit: () => void }) {
             {DIAGNOSIS_PHOTOS.map((kind) => {
               const shot = photos.find((p) => p.kind === kind.key);
               return (
-                <label key={kind.key} className="rounded-2xl border border-dashed border-navy/20 p-4">
+                <div key={kind.key} className="rounded-2xl border border-dashed border-navy/20 p-4">
                   <div className="font-semibold">
                     {kind.label} {kind.required ? "*" : "(optional)"}
                   </div>
                   <p className="text-xs text-muted">{kind.hint}</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="mt-3 text-sm"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
+                  <PhotoPicker
+                    disabled={busy}
+                    onFile={async (file) => {
                       setBusy(true);
+                      setError("");
                       try {
                         await uploadPhoto(kind.key, file);
                       } catch (err) {
@@ -672,7 +669,7 @@ export function DiagnoseWizard({ onExit }: { onExit: () => void }) {
                       </button>
                     </>
                   )}
-                </label>
+                </div>
               );
             })}
           </div>
