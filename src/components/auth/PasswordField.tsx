@@ -18,7 +18,7 @@ export function PasswordField({
     <div className="relative">
       <input
         type={show ? "text" : "password"}
-        className="w-full rounded-2xl border px-4 py-3 pr-12"
+        className="field pr-12"
         placeholder={placeholder}
         value={value}
         autoComplete={autoComplete}

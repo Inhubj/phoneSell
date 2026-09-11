@@ -24,7 +24,9 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
       <Splash />
       <Header />
       <VisitorPing />
-      <main key={path} className={`page-enter flex-1 pb-20 md:pb-0 ${path === "/" ? "" : "pt-[4.5rem]"}`}>{children}</main>
+      <main key={path} className="page-enter flex-1 pb-20 pt-[4.35rem] md:pb-0">
+        {children}
+      </main>
       <Footer />
       <WhatsAppButton />
       <MobileStickyCta />

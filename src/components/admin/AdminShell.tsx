@@ -59,8 +59,8 @@ export function AdminShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#eef1f6] text-ink">
-      <div className="grid lg:grid-cols-[240px_1fr]">
+    <div className="min-h-screen bg-[#f4f7fb] text-ink">
+      <div className="grid lg:grid-cols-[248px_1fr]">
         <aside className="bg-navy p-5 text-white lg:min-h-screen">
           <Logo light compact />
           <p className="mt-3 text-xs text-white/50">{role.replaceAll("_", " ")}</p>
@@ -87,7 +87,7 @@ export function AdminShell({
                 value={q}
                 onChange={(e) => search(e.target.value)}
                 placeholder="Search Order ID / Mobile / Email / Customer ID / Model"
-                className="w-full rounded-xl border bg-white/80 px-4 py-2 text-sm backdrop-blur"
+                className="field py-2.5"
               />
               {hits && (
                 <div className="absolute z-20 mt-1 max-h-80 w-full overflow-auto rounded-xl bg-white p-3 text-sm shadow">

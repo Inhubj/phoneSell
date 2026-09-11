@@ -17,11 +17,10 @@ export function CustomerLoginForm({
   const params = useSearchParams();
   const rawNext = params.get("next") || "/sell";
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/sell";
-  const [method, setMethod] = useState<"mobile" | "email">("mobile");
+  const [method, setMethod] = useState<"mobile" | "email">("email");
   const [identifier, setIdentifier] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
-  const [devCode, setDevCode] = useState("");
   const [mode, setMode] = useState<"otp" | "password">("otp");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,7 +41,6 @@ export function CustomerLoginForm({
       return;
     }
     setSent(true);
-    setDevCode(data.devCode || "");
   }
 
   async function passwordLogin() {
@@ -142,7 +140,11 @@ export function CustomerLoginForm({
       ) : (
         <>
           <input className="mt-3 w-full rounded-2xl border px-4 py-3" placeholder="6-digit OTP" value={code} onChange={(e) => setCode(e.target.value)} />
-          {devCode && <p className="mt-2 text-xs text-muted">Development OTP: {devCode}</p>}
+          <p className="mt-2 text-xs text-muted">
+            {method === "email"
+              ? "We emailed a 6-digit code. Check inbox and spam."
+              : "Enter the 6-digit code sent to your mobile."}
+          </p>
           <button disabled={busy} onClick={verify} className="btn-premium mt-4 w-full rounded-full bg-gold py-3 font-semibold text-navy">
             {busy ? "Verifying..." : "Verify & continue"}
             {!busy && <span className="btn-arrow" aria-hidden>→</span>}

@@ -5,7 +5,15 @@ import { FAQS } from "@/lib/faqs";
 import { PremiumCta } from "@/components/ui/PremiumCta";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { TiltCard } from "@/components/ui/TiltCard";
+import {
+  BadgeCheck,
+  MapPin,
+  ScanLine,
+  ShieldCheck,
+  Smartphone,
+  Truck,
+  Wallet,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +30,11 @@ const FEATURED_BRANDS = [
   "Nothing",
 ];
 
-const HERO_TRUST = [
-  "Free doorstep pickup",
-  "Fair market valuation",
-  "Same-day slots in many areas",
-  "Damaged phones accepted",
-  "Payment recorded on your order",
+const STATS = [
+  { n: "Free", l: "Doorstep pickup" },
+  { n: "Same day", l: "Slots in many areas" },
+  { n: "Fair", l: "Catalogue pricing" },
+  { n: "Recorded", l: "Payment on order" },
 ];
 
 const HOW = [
@@ -38,12 +45,12 @@ const HOW = [
 ];
 
 const WHY = [
-  { t: "Fair & transparent pricing", d: "Catalogue rules, not hidden deductions after the fact." },
-  { t: "Free doorstep pickup", d: "Our executive comes to your home or office." },
-  { t: "Quick process", d: "Estimate online, then book a pickup slot." },
-  { t: "Verified inspection", d: "Final value is confirmed after a physical check." },
-  { t: "Secure payment", d: "UPI, bank transfer or cash — recorded on your order." },
-  { t: "Mumbai-based team", d: `Local service from ${BUSINESS.area}, ${BUSINESS.city}.` },
+  { t: "Fair & transparent pricing", d: "Catalogue rules, not hidden deductions after the fact.", Icon: BadgeCheck },
+  { t: "Free doorstep pickup", d: "Our executive comes to your home or office.", Icon: Truck },
+  { t: "Quick process", d: "Estimate online, then book a pickup slot.", Icon: ScanLine },
+  { t: "Verified inspection", d: "Final value is confirmed after a physical check.", Icon: ShieldCheck },
+  { t: "Secure payment", d: "UPI, bank transfer or cash — recorded on your order.", Icon: Wallet },
+  { t: "Mumbai-based team", d: `Local service from ${BUSINESS.area}, ${BUSINESS.city}.`, Icon: MapPin },
 ];
 
 const CHECKS = ["Screen", "Camera", "Speaker", "Battery", "Touch", "Device condition"];
@@ -68,15 +75,17 @@ export default async function HomePage() {
       <section className="hero-grid relative overflow-hidden text-white">
         <span className="orb -left-10 top-8 h-48 w-48 bg-gold/20" />
         <span className="orb right-0 bottom-0 h-56 w-56 bg-royal/40" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-32 lg:grid-cols-2 lg:px-6">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-6 lg:pb-20 lg:pt-16">
           <div className="reveal stagger-1">
-            <p className="kicker">{BUSINESS.tagline}</p>
-            <div className="mt-4 h-0.5 w-16 bg-gold" />
-            <h1 className="font-display mt-5 text-[2.4rem] leading-[1.12] md:text-5xl lg:text-[3.15rem]">
-              Turn your old smartphone into instant value
+            <p className="inline-flex rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-2">
+              {BUSINESS.tagline}
+            </p>
+            <h1 className="font-display mt-6 text-[2.45rem] leading-[1.08] md:text-5xl lg:text-[3.35rem]">
+              Sell your old phone.
+              <span className="block text-gold-2">Get a clear offer.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-white/75">
-              Get an estimated price online. We collect used or damaged smartphones from home across Mumbai, Mira Road, Bhayandar, Thane and nearby areas.
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/70">
+              Instant online estimate and scheduled doorstep pickup across Mumbai, Mira Road, Bhayandar, Thane and nearby areas.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <PremiumCta href="/sell?flow=sell" variant="gold">
@@ -86,34 +95,31 @@ export default async function HomePage() {
                 Get My Phone’s Value
               </PremiumCta>
             </div>
-            <p className="mt-5 text-sm text-white/75">
-              Selling the same phone you are using now?{" "}
-              <Link href="/sell?flow=diagnose" className="font-semibold text-gold underline-offset-4 hover:underline">
+            <p className="mt-5 text-sm text-white/65">
+              Using this phone now?{" "}
+              <Link href="/sell?flow=diagnose" className="font-semibold text-gold-2 underline-offset-4 hover:underline">
                 Diagnose it
               </Link>
             </p>
-            <ul className="mt-10 flex flex-wrap gap-2">
-              {HERO_TRUST.map((item) => (
-                <li key={item} className="rounded-full border border-white/15 bg-white/8 px-3.5 py-1.5 text-xs font-medium text-white/85">
-                  {item}
-                </li>
-              ))}
-            </ul>
           </div>
-          <TiltCard className="glass-dark reveal stagger-3 rounded-[1.6rem] p-7">
-            <p className="kicker">Doorstep pickup</p>
-            <h2 className="font-display mt-3 text-2xl leading-snug md:text-[1.7rem]">Get your phone’s value in minutes</h2>
-            <p className="mt-3 text-sm leading-6 text-white/70">
-              Search a model to sell, or check value. If this is the phone in your hand, diagnose it instead.
-            </p>
-            <ol className="mt-6 space-y-3 border-y border-white/10 py-5">
+          <div className="reveal stagger-3 rounded-[1.75rem] border border-white/12 bg-white/8 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl md:p-8">
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gold text-white">
+                <Smartphone className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gold-2">Doorstep pickup</p>
+                <h2 className="mt-1 text-xl font-semibold">Value in a few minutes</h2>
+              </div>
+            </div>
+            <ol className="mt-6 space-y-3">
               {[
                 ["01", "Select model"],
                 ["02", "Share condition"],
                 ["03", "Book home pickup"],
               ].map(([n, t]) => (
-                <li key={n} className="flex items-center gap-3 text-sm text-white/85">
-                  <span className="font-semibold tracking-wider text-gold">{n}</span>
+                <li key={n} className="flex items-center gap-3 rounded-2xl bg-white/6 px-4 py-3 text-sm text-white/90">
+                  <span className="font-semibold text-gold-2">{n}</span>
                   {t}
                 </li>
               ))}
@@ -122,36 +128,43 @@ export default async function HomePage() {
               href="/sell?flow=value"
               className="btn-premium mt-6 flex items-center justify-between rounded-2xl bg-white px-5 py-4 text-navy"
             >
-              <span className="text-navy/45">Search iPhone 13, Galaxy S24…</span>
+              <span className="text-navy/40">Search iPhone 13, Galaxy S24…</span>
               <span className="rounded-full bg-navy px-4 py-2 text-sm font-semibold text-white">Search</span>
             </Link>
-            <p className="mt-4 text-xs leading-5 text-white/45">{SHORT_DISCLAIMER}</p>
-          </TiltCard>
+            <p className="mt-4 text-xs leading-5 text-white/40">{SHORT_DISCLAIMER}</p>
+          </div>
+        </div>
+        <div className="relative border-t border-white/10">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-white/8 sm:grid-cols-4">
+            {STATS.map((s) => (
+              <div key={s.l} className="bg-navy/40 px-5 py-5">
+                <p className="text-lg font-semibold text-white">{s.n}</p>
+                <p className="mt-1 text-sm text-white/55">{s.l}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">
-        <div className="panel overflow-hidden rounded-[1.6rem]">
+      <section className="mx-auto max-w-7xl px-4 py-16 lg:px-6">
+        <div className="panel overflow-hidden rounded-[1.75rem]">
           <div className="grid lg:grid-cols-2">
             <div className="p-7 md:p-10">
               <Reveal>
                 <SectionHeading
                   kicker="On-device checks"
                   title="Diagnose your phone in minutes"
-                  description="Open this site on the phone you want to sell. We run browser-supported tests; you confirm the rest. We never claim access the browser cannot provide."
+                  description="Open this site on the phone you want to sell. We run browser-supported tests; you confirm the rest."
                 />
               </Reveal>
-              <p className="mt-4 text-sm leading-6 text-muted">
-                Results are labelled Automatically Detected, Test Passed, Customer Confirmed, or Unable to Test.
-              </p>
               <PremiumCta href="/sell?flow=diagnose" className="mt-8">
                 Start diagnosis
               </PremiumCta>
             </div>
-            <ul className="grid gap-px bg-navy/8 sm:grid-cols-2">
+            <ul className="grid gap-px bg-navy/6 sm:grid-cols-2">
               {CHECKS.map((item, i) => (
                 <Reveal key={item} delay={i * 60}>
-                  <li className="flex items-center gap-3 bg-cream/80 px-6 py-5 font-semibold text-navy">
+                  <li className="flex items-center gap-3 bg-white px-6 py-5 font-semibold text-navy">
                     <span className="step-num text-[11px]">{String(i + 1).padStart(2, "0")}</span>
                     {item}
                   </li>
@@ -162,25 +175,25 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-navy/5 bg-white py-16">
-        <div className="mx-auto max-w-6xl px-4 lg:px-6">
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
           <Reveal>
             <SectionHeading
               kicker="Catalogue"
-              title="Phones people sell with us"
+              title="Popular phones we buy"
               description="Start with a brand, or add another model if it is not listed."
             />
           </Reveal>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {display.map((brand, i) => (
               <Reveal key={brand.id} delay={i * 40}>
-                <Link href={`/sell?brand=${brand.slug}`} className="device-card panel block rounded-2xl px-5 py-6 text-center font-semibold">
+                <Link href={`/sell?brand=${brand.slug}`} className="device-card panel block rounded-2xl px-5 py-7 text-center font-semibold">
                   {brand.name}
                 </Link>
               </Reveal>
             ))}
             <Reveal delay={display.length * 40}>
-              <Link href="/sell?custom=1" className="device-card panel block rounded-2xl border-dashed px-5 py-6 text-center font-semibold">
+              <Link href="/sell?custom=1" className="device-card panel block rounded-2xl border-dashed px-5 py-7 text-center font-semibold text-royal">
                 Other brands
               </Link>
             </Reveal>
@@ -189,14 +202,12 @@ export default async function HomePage() {
       </section>
 
       <section className="hero-grid relative overflow-hidden py-16 text-white">
-        <span className="orb -left-16 top-0 h-40 w-40 bg-gold/20" />
-        <span className="orb right-0 bottom-0 h-48 w-48 bg-royal/50" />
-        <div className="relative mx-auto max-w-6xl px-4 lg:px-6">
+        <div className="relative mx-auto max-w-7xl px-4 lg:px-6">
           <Reveal>
             <SectionHeading
               light
               kicker="Service coverage"
-              title="Doorstep pickup across Mumbai & nearby areas"
+              title="Pickup across Mumbai & nearby"
               description="We collect phones from your home or office. Timing and any pickup charges follow the area selected at booking."
             />
           </Reveal>
@@ -208,13 +219,10 @@ export default async function HomePage() {
               </span>
             ))}
           </div>
-          <p className="mt-5 text-sm text-white/60">
-            Popular areas include Mira Road, Bhayandar, Borivali, Andheri, Thane and Navi Mumbai.
-          </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 lg:px-6">
         <Reveal>
           <SectionHeading kicker="Process" title="How it works" description="Four steps from enquiry to payment, with a clear order record at every stage." />
         </Reveal>
@@ -231,17 +239,18 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-navy/5 bg-white py-16">
-        <div className="mx-auto max-w-6xl px-4 lg:px-6">
+      <section className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 lg:px-6">
           <Reveal>
             <SectionHeading kicker="Why PhoneSell" title="A local, professional buyback" />
           </Reveal>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {WHY.map((item, i) => (
               <Reveal key={item.t} delay={i * 50}>
-                <article className="h-full rounded-2xl border border-navy/8 bg-cream/50 p-6">
-                  <h3 className="border-l-2 border-gold pl-3 font-semibold">{item.t}</h3>
-                  <p className="mt-3 text-sm leading-6 text-muted">{item.d}</p>
+                <article className="h-full rounded-2xl border border-navy/6 bg-cream p-6">
+                  <item.Icon className="h-5 w-5 text-royal" />
+                  <h3 className="mt-4 font-semibold">{item.t}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted">{item.d}</p>
                 </article>
               </Reveal>
             ))}
@@ -249,7 +258,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:px-6">
+      <section className="mx-auto max-w-7xl px-4 py-16 lg:px-6">
         <Reveal>
           <SectionHeading kicker="Help" title="Frequently asked questions" />
         </Reveal>
@@ -270,21 +279,21 @@ export default async function HomePage() {
 
       <section className="px-4 pb-16 lg:px-6">
         <Reveal>
-          <div className="mx-auto max-w-6xl overflow-hidden rounded-[1.6rem] bg-navy text-white">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-[1.75rem] bg-navy text-white">
             <div className="grid lg:grid-cols-2">
               <div className="p-8 md:p-10">
-                <p className="kicker">Store</p>
+                <p className="kicker text-gold-2">Store</p>
                 <h2 className="font-display mt-3 text-3xl">Visit us in Mira Road East</h2>
-                <p className="mt-4 leading-7 text-white/75">
+                <p className="mt-4 leading-7 text-white/70">
                   {BUSINESS.addressLine1}
                   <br />
                   {BUSINESS.addressLine2}
                 </p>
-                <p className="mt-3 text-sm text-white/55">{BUSINESS.hours}</p>
-                <a href={BUSINESS.telHref} className="mt-6 inline-flex rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-navy">
+                <p className="mt-3 text-sm text-white/50">{BUSINESS.hours}</p>
+                <a href={BUSINESS.telHref} className="mt-6 inline-flex rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-white">
                   Call {BUSINESS.phoneDisplay}
                 </a>
-                <p className="mt-8 text-xs leading-5 text-white/40">{PRICE_DISCLAIMER}</p>
+                <p className="mt-8 text-xs leading-5 text-white/35">{PRICE_DISCLAIMER}</p>
               </div>
               <iframe
                 title="PhoneSell location"

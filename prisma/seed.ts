@@ -331,7 +331,11 @@ async function main() {
         channel,
         provider: channel === "EMAIL" ? "smtp" : channel === "WHATSAPP" ? "whatsapp_cloud" : "sms_gateway",
         isEnabled: false,
-        configJson: JSON.stringify({ from: "PhoneSell", businessPhone: "7068867486" }),
+        configJson: JSON.stringify(
+          channel === "EMAIL"
+            ? { from: "PhoneSell <ivan.p@example.net>", host: "", port: 587, user: "", pass: "", secure: false }
+            : { from: "PhoneSell", businessPhone: "7068867486" },
+        ),
       },
     });
   }

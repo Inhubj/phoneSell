@@ -49,13 +49,20 @@ export async function POST(req: Request) {
     },
   });
 
-  await sendNotification({
+  const mailed = await sendNotification({
     channel: method === "EMAIL" ? "EMAIL" : "SMS",
     eventType: "OTP",
     recipient: identifier,
     subject: "Your PhoneSell login code",
-    body: `PhoneSell login OTP is ${code}. Valid for 10 minutes.`,
+    body: `Your PhoneSell login code is ${code}.\n\nIt is valid for 10 minutes.\n\nIf you did not request this, ignore this email.`,
   });
+
+  if (method === "EMAIL" && mailed.status !== "SENT") {
+    return NextResponse.json(
+      { error: mailed.error || "Could not send the code to your email. Check SMTP settings." },
+      { status: 502 },
+    );
+  }
 
   await recordLoginEvent({
     loginMethod: method === "EMAIL" ? "EMAIL_OTP" : "MOBILE_OTP",
@@ -64,6 +71,5 @@ export async function POST(req: Request) {
     userAgent: req.headers.get("user-agent") || "",
   });
 
-  const dev = process.env.OTP_BYPASS_DEV === "true";
-  return NextResponse.json({ ok: true, ...(dev ? { devCode: code } : {}) });
+  return NextResponse.json({ ok: true });
 }

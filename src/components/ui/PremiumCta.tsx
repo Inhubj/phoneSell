@@ -14,9 +14,9 @@ export function PremiumCta({
 }) {
   const styles =
     variant === "gold"
-      ? "bg-gold text-navy"
+      ? "bg-gold text-white shadow-lg shadow-royal/25"
       : variant === "ghost"
-        ? "border border-white/30 text-white"
+        ? "border border-white/20 bg-white/5 text-white hover:bg-white/10"
         : "bg-navy text-white";
   return (
     <Link href={href} className={`btn-premium rounded-full px-7 py-3.5 text-center font-semibold ${styles} ${className}`}>
@@ -34,7 +34,7 @@ export function PremiumButton({
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "navy" | "gold" }) {
   return (
     <button
-      className={`btn-premium rounded-full px-6 py-3 font-semibold ${variant === "gold" ? "bg-gold text-navy" : "bg-navy text-white"} ${className}`}
+      className={`btn-premium rounded-full px-6 py-3 font-semibold ${variant === "gold" ? "bg-gold text-white" : "bg-navy text-white"} ${className}`}
       {...props}
     >
       {children}

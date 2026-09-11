@@ -31,6 +31,5 @@ export async function POST(req: Request) {
     body: `PhoneSell OTP is ${code}. Valid for 10 minutes.`,
   });
 
-  const dev = process.env.OTP_BYPASS_DEV === "true";
-  return NextResponse.json({ ok: true, ...(dev ? { devCode: code } : {}) });
+  return NextResponse.json({ ok: true });
 }

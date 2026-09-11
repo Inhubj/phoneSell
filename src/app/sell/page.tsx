@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 export default function SellPage() {
   return (
     <div className="relative mx-auto max-w-4xl overflow-hidden px-4 py-10 lg:px-6">
-      <span className="orb -left-20 top-0 h-48 w-48 bg-gold/15" />
-      <span className="orb right-0 bottom-10 h-40 w-40 bg-royal/15" />
+      <span className="orb -left-20 top-0 h-48 w-48 bg-gold/12" />
+      <span className="orb right-0 bottom-10 h-40 w-40 bg-royal/12" />
       <Suspense fallback={<div className="glass rounded-3xl p-10">Loading selling flow…</div>}>
         <SellWizard />
       </Suspense>

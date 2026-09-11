@@ -57,12 +57,18 @@ export async function POST(req: Request) {
       mobile: method === "MOBILE" ? identifier : "",
     },
   });
-  await sendNotification({
+  const mailed = await sendNotification({
     channel: method === "EMAIL" ? "EMAIL" : "SMS",
     eventType: "OTP",
     recipient: identifier,
     subject: "Password reset code",
-    body: `PhoneSell password reset OTP is ${code}. Valid for 10 minutes.`,
+    body: `Your PhoneSell password reset code is ${code}.\n\nIt is valid for 10 minutes.`,
   });
-  return NextResponse.json({ ok: true, ...(process.env.OTP_BYPASS_DEV === "true" ? { devCode: code } : {}) });
+  if (method === "EMAIL" && mailed.status !== "SENT") {
+    return NextResponse.json(
+      { error: mailed.error || "Could not send the code to your email." },
+      { status: 502 },
+    );
+  }
+  return NextResponse.json({ ok: true });
 }

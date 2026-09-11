@@ -13,8 +13,8 @@ export function SectionHeading({
 }) {
   return (
     <div className={align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-      {kicker ? <p className={`kicker ${light ? "text-gold" : ""}`}>{kicker}</p> : null}
-      <h2 className={`font-display mt-3 text-3xl leading-tight md:text-4xl ${light ? "text-white" : "text-navy"}`}>
+      {kicker ? <p className={`kicker ${light ? "text-gold-2" : ""}`}>{kicker}</p> : null}
+      <h2 className={`font-display mt-3 text-[1.85rem] leading-[1.15] md:text-[2.35rem] ${light ? "text-white" : "text-navy"}`}>
         {title}
       </h2>
       {description ? (

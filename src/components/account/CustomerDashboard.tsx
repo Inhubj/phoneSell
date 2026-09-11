@@ -28,7 +28,7 @@ export function CustomerDashboardCards({ orders }: { orders: any[] }) {
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {stats.map((card) => (
         <article key={card.label} className="card-3d rounded-2xl bg-white p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold">{card.label}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-royal">{card.label}</p>
           <p className="mt-3 font-display text-2xl leading-snug text-navy">
             {card.amount != null ? <CountUp prefix="₹" value={card.amount} /> : card.value}
           </p>
@@ -48,7 +48,7 @@ export function CustomerOrderCard({
 }) {
   return (
     <Link href={href} className="card-3d block rounded-2xl bg-white p-5 md:p-6">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold">Order</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-royal">Order</p>
       <p className="mt-2 font-display text-xl text-navy md:text-2xl">{order.orderNumber}</p>
       <p className="mt-2 text-sm font-medium text-ink">{orderDeviceLabel(order)}</p>
       <p className="mt-3 text-sm text-navy">

@@ -254,9 +254,20 @@ export async function POST(req: Request) {
   }
 
   if (type === "notify") {
+    const incoming = (body.config || {}) as Record<string, unknown>;
+    if (body.provider === "smtp" || incoming.host) {
+      const existing = await prisma.notificationConfig.findUnique({ where: { id: body.id } });
+      let prev: Record<string, unknown> = {};
+      try {
+        prev = existing?.configJson ? JSON.parse(existing.configJson) : {};
+      } catch {
+        prev = {};
+      }
+      if (!incoming.pass && prev.pass) incoming.pass = prev.pass;
+    }
     await prisma.notificationConfig.update({
       where: { id: body.id },
-      data: { isEnabled: Boolean(body.isEnabled), provider: body.provider, configJson: JSON.stringify(body.config || {}) },
+      data: { isEnabled: Boolean(body.isEnabled), provider: body.provider, configJson: JSON.stringify(incoming) },
     });
     return NextResponse.json({ ok: true });
   }

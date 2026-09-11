@@ -18,7 +18,6 @@ export function ForgotPasswordForm({
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [sent, setSent] = useState(false);
-  const [devCode, setDevCode] = useState("");
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -38,7 +37,6 @@ export function ForgotPasswordForm({
       return;
     }
     setSent(true);
-    setDevCode(data.devCode || "");
   }
 
   async function reset() {
@@ -98,7 +96,9 @@ export function ForgotPasswordForm({
           ) : (
             <div className="mt-3 space-y-3">
               <input className="w-full rounded-2xl border px-4 py-3" placeholder="6-digit OTP" value={code} onChange={(e) => setCode(e.target.value)} />
-              {devCode && <p className="text-xs text-muted">Development OTP: {devCode}</p>}
+              <p className="text-xs text-muted">
+                {method === "email" ? "We emailed a 6-digit code. Check inbox and spam." : "Enter the code sent to your mobile."}
+              </p>
               <PasswordField value={password} onChange={setPassword} placeholder="New password" autoComplete="new-password" />
               <PasswordField value={confirm} onChange={setConfirm} placeholder="Confirm password" autoComplete="new-password" />
               <button disabled={busy} onClick={reset} className="w-full rounded-full bg-gold py-3 font-semibold text-navy">

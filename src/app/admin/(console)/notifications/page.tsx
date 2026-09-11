@@ -10,7 +10,7 @@ export default async function NotificationsPage() {
     <div>
       <h1 className="font-display text-3xl">Notification integrations</h1>
       <p className="mt-2 text-sm text-muted">
-        SMS, WhatsApp and email are logged against each order. Enable a provider here when credentials are ready — nothing is hard-coded to a single vendor.
+        Email uses SMTP. Add host, username and password here, or set SMTP_* environment variables. SMS and WhatsApp stay logged until a provider is connected.
       </p>
       <div className="mt-6 space-y-4">
         {configs.map((c) => (

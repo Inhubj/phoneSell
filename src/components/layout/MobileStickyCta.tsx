@@ -3,7 +3,7 @@ import { BUSINESS } from "@/lib/constants";
 
 export function MobileStickyCta() {
   return (
-    <div className="sticky-cta fixed inset-x-0 bottom-0 z-30 flex gap-2 bg-cream/95 p-3 backdrop-blur md:hidden">
+    <div className="sticky-cta fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-navy/8 bg-white/95 p-3 backdrop-blur md:hidden">
       <a
         href={BUSINESS.telHref}
         className="flex-1 rounded-full border border-navy/20 py-3 text-center text-sm font-semibold"

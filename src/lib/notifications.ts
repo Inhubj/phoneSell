@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { BUSINESS } from "./constants";
+import { resolveSmtpSettings, sendSmtpMail } from "./smtp";
 
 export type NotifyInput = {
   channel: "SMS" | "WHATSAPP" | "EMAIL";
@@ -53,8 +54,12 @@ export async function sendNotification(input: NotifyInput, vars: Record<string, 
   const cfg = await prisma.notificationConfig.findUnique({
     where: { channel: input.channel },
   });
-  const enabled = cfg?.isEnabled ?? false;
-  const provider = cfg?.provider ?? "console";
+  const smtp = input.channel === "EMAIL" ? resolveSmtpSettings(cfg?.configJson) : null;
+  const enabled =
+    input.channel === "EMAIL"
+      ? Boolean(smtp) && (Boolean(cfg?.isEnabled) || Boolean(process.env.SMTP_HOST))
+      : Boolean(cfg?.isEnabled);
+  const provider = input.channel === "EMAIL" ? "smtp" : cfg?.provider ?? "console";
   const body = interpolate(input.body, { phone: BUSINESS.phone, ...vars });
   const subject = input.subject
     ? interpolate(input.subject, { phone: BUSINESS.phone, ...vars })
@@ -76,13 +81,29 @@ export async function sendNotification(input: NotifyInput, vars: Record<string, 
 
   if (!enabled) {
     console.info("[notify:console]", input.channel, input.eventType, input.recipient, body);
-    return record;
+    return { status: "LOGGED" as const };
   }
 
   try {
-    // Provider adapters (Twilio, WhatsApp Cloud API, SES, MSG91, etc.)
-    // are configured from the admin dashboard. Until credentials are added,
-    // messages stay queued with a clear provider name.
+    if (input.channel === "EMAIL") {
+      if (!smtp) {
+        await prisma.notification.update({
+          where: { id: record.id },
+          data: {
+            status: "PENDING_PROVIDER",
+            error: "SMTP is not configured. Set SMTP_HOST in env or Admin → Notifications.",
+          },
+        });
+        return { status: "PENDING_PROVIDER" as const, error: "SMTP is not configured." };
+      }
+      await sendSmtpMail(smtp, input.recipient, subject || "PhoneSell", body);
+      await prisma.notification.update({
+        where: { id: record.id },
+        data: { status: "SENT", sentAt: new Date(), error: null, provider: "smtp" },
+      });
+      return { status: "SENT" as const };
+    }
+
     await prisma.notification.update({
       where: { id: record.id },
       data: {
@@ -90,14 +111,15 @@ export async function sendNotification(input: NotifyInput, vars: Record<string, 
         error: `Provider "${provider}" is enabled but credentials are not connected yet.`,
       },
     });
+    return { status: "PENDING_PROVIDER" as const };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     await prisma.notification.update({
       where: { id: record.id },
-      data: { status: "FAILED", error: error instanceof Error ? error.message : "Unknown error" },
+      data: { status: "FAILED", error: message },
     });
+    return { status: "FAILED" as const, error: message };
   }
-
-  return record;
 }
 
 export async function notifyOrderEvent(

@@ -43,10 +43,9 @@ export async function POST(req: Request) {
           eventType: "ADMIN_2FA",
           recipient: admin.email,
           subject: "PhoneSell admin verification code",
-          body: `Your admin login OTP is ${code}. Valid for 10 minutes.`,
+          body: `Your admin login code is ${code}.\n\nIt is valid for 10 minutes.`,
         });
-        const dev = process.env.OTP_BYPASS_DEV === "true";
-        return NextResponse.json({ requires2fa: true, ...(dev ? { devCode: code } : {}) });
+        return NextResponse.json({ requires2fa: true });
       }
       const row = await prisma.customerOtp.findFirst({
         where: { identifier: admin.email, purpose: "ADMIN_2FA", verified: false },
