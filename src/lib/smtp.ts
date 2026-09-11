@@ -93,6 +93,9 @@ export async function sendSmtpMail(settings: SmtpSettings, to: string, subject: 
       ? {
           service: "gmail",
           auth: settings.user && pass ? { user: settings.user, pass } : undefined,
+          connectionTimeout: 10_000,
+          greetingTimeout: 10_000,
+          socketTimeout: 15_000,
         }
       : {
           host: settings.host,
@@ -100,6 +103,9 @@ export async function sendSmtpMail(settings: SmtpSettings, to: string, subject: 
           secure: settings.secure,
           requireTLS: settings.port === 587,
           auth: settings.user && pass ? { user: settings.user, pass } : undefined,
+          connectionTimeout: 10_000,
+          greetingTimeout: 10_000,
+          socketTimeout: 15_000,
         },
   );
 

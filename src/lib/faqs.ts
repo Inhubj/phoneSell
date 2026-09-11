@@ -49,7 +49,7 @@ export const FAQS = [
   },
   {
     q: "Can I cancel my order?",
-    a: "Yes. Contact us on 7068867486 or use the contact form before the executive collects the device. After collection, cancellation depends on inspection status.",
+    a: "Yes. Contact us on 7068867486, email Phone0Sell@gmail.com, or message Instagram @phonesell0 before the executive collects the device. After collection, cancellation depends on inspection status.",
   },
   {
     q: "What happens to my personal data?",

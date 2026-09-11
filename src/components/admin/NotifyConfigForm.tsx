@@ -24,7 +24,7 @@ export function NotifyConfigForm({
   const [port, setPort] = useState(String(parsed.port || "587"));
   const [user, setUser] = useState(String(parsed.user || ""));
   const [pass, setPass] = useState("");
-  const [from, setFrom] = useState(String(parsed.from || "PhoneSell <ivan.p@example.net>"));
+  const [from, setFrom] = useState(String(parsed.from || "PhoneSell <Phone0Sell@gmail.com>"));
   const [secure, setSecure] = useState(Boolean(parsed.secure) || port === "465");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -91,7 +91,7 @@ export function NotifyConfigForm({
           </label>
           <label className="text-sm sm:col-span-2">
             From address
-            <input className="field mt-1" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="PhoneSell <ivan.p@example.net>" />
+            <input className="field mt-1" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="PhoneSell <Phone0Sell@gmail.com>" />
           </label>
         </div>
       ) : (

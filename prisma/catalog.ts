@@ -11,8 +11,11 @@ export type CatalogDevice = {
 };
 export type CatalogBrand = { name: string; slug: string; devices: CatalogDevice[] };
 
+/** Buyback offers are 15% below the listed catalogue value. */
+const BUYBACK_PRICE_FACTOR = 0.85;
+
 function v(ram: number, storage: number, price: number, original?: number): CatalogVariant {
-  return { ram, storage, price, original };
+  return { ram, storage, price: Math.round(price * BUYBACK_PRICE_FACTOR), original };
 }
 
 function stor(ram: number, items: Array<[number, number, number?]>): CatalogVariant[] {

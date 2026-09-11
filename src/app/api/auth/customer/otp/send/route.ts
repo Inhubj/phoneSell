@@ -5,6 +5,9 @@ import { indianMobile } from "@/lib/validations";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
 import { sendNotification } from "@/lib/notifications";
 import { recordLoginEvent } from "@/lib/analytics";
+import { setOtpChallenge } from "@/lib/otp-challenge";
+
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   if (!assertSameOrigin(req)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -48,6 +51,7 @@ export async function POST(req: Request) {
       expiresAt: new Date(Date.now() + 10 * 60_000),
     },
   });
+  await setOtpChallenge({ identifier, channel: method, purpose: "LOGIN", codeHash, attempts: 0 });
 
   const mailed = await sendNotification({
     channel: method === "EMAIL" ? "EMAIL" : "SMS",

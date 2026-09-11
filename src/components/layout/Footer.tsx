@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BUSINESS } from "@/lib/constants";
 import { Logo } from "./Logo";
+import { ContactChannels } from "./ContactChannels";
 
 const SELL = [
   { href: "/sell?flow=sell", label: "Sell my phone" },
@@ -68,6 +69,7 @@ export function Footer() {
             {BUSINESS.addressLine2}
           </p>
           <p className="mt-3 text-xs text-white/40">{BUSINESS.hours}</p>
+          <ContactChannels tone="dark" />
         </div>
       </div>
       <div className="border-t border-white/10 py-5 text-center text-xs text-white/35">

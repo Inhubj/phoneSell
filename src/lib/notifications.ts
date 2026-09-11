@@ -55,10 +55,7 @@ export async function sendNotification(input: NotifyInput, vars: Record<string, 
     where: { channel: input.channel },
   });
   const smtp = input.channel === "EMAIL" ? resolveSmtpSettings(cfg?.configJson) : null;
-  const enabled =
-    input.channel === "EMAIL"
-      ? Boolean(smtp) && (Boolean(cfg?.isEnabled) || Boolean(process.env.SMTP_HOST))
-      : Boolean(cfg?.isEnabled);
+  const enabled = input.channel === "EMAIL" ? Boolean(smtp) : Boolean(cfg?.isEnabled);
   const provider = input.channel === "EMAIL" ? "smtp" : cfg?.provider ?? "console";
   const body = interpolate(input.body, { phone: BUSINESS.phone, ...vars });
   const subject = input.subject
@@ -80,8 +77,16 @@ export async function sendNotification(input: NotifyInput, vars: Record<string, 
   });
 
   if (!enabled) {
-    console.info("[notify:console]", input.channel, input.eventType, input.recipient, body);
-    return { status: "LOGGED" as const };
+    if (process.env.NODE_ENV !== "production") {
+      console.info("[notify:console]", input.channel, input.eventType, input.recipient);
+    }
+    return {
+      status: "LOGGED" as const,
+      error:
+        input.channel === "EMAIL"
+          ? "SMTP is not configured on this server. Add SMTP_HOST, SMTP_USER and SMTP_PASS in Vercel → Settings → Environment Variables, then redeploy."
+          : undefined,
+    };
   }
 
   try {

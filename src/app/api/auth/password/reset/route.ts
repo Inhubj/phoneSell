@@ -5,6 +5,7 @@ import { indianMobile } from "@/lib/validations";
 import { hashPassword } from "@/lib/auth";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
 import { writeAudit } from "@/lib/orders";
+import { clearOtpChallenge, getOtpChallenge, normalizeOtpCode, setOtpChallenge } from "@/lib/otp-challenge";
 
 export async function POST(req: Request) {
   if (!assertSameOrigin(req)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
   const kind = body?.kind === "admin" || body?.kind === "executive" ? body.kind : "customer";
   const method = body?.method === "mobile" ? "MOBILE" : "EMAIL";
   const password = String(body?.password || "");
-  const code = String(body?.code || "");
+  const code = normalizeOtpCode(body?.code);
   if (password.length < 8) return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
 
   let identifier = String(body?.identifier || "").trim().toLowerCase();
@@ -27,16 +28,35 @@ export async function POST(req: Request) {
     identifier = mobile.data;
   }
 
+  const purpose = `PASSWORD_RESET_${kind.toUpperCase()}`;
+  const challenge = await getOtpChallenge();
   const row = await prisma.customerOtp.findFirst({
-    where: { identifier, channel: method, purpose: `PASSWORD_RESET_${kind.toUpperCase()}`, verified: false },
+    where: { identifier, channel: method, purpose, verified: false },
     orderBy: { createdAt: "desc" },
   });
-  if (!row || row.expiresAt < new Date() || row.attempts >= 5) {
+  const fromCookie =
+    challenge?.identifier === identifier &&
+    challenge.channel === method &&
+    challenge.purpose === purpose &&
+    Boolean(challenge.codeHash);
+  const hash = fromCookie
+    ? challenge.codeHash
+    : row && row.expiresAt >= new Date()
+      ? row.codeHash
+      : "";
+  const attempts = fromCookie ? challenge.attempts : row?.attempts ?? 0;
+  if (!hash || attempts >= 5) {
     return NextResponse.json({ error: "OTP expired. Request a new one." }, { status: 400 });
   }
-  const ok = await bcrypt.compare(code, row.codeHash);
-  await prisma.customerOtp.update({ where: { id: row.id }, data: { attempts: { increment: 1 }, verified: ok } });
-  if (!ok) return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 });
+  const ok = await bcrypt.compare(code, hash);
+  if (row) {
+    await prisma.customerOtp.update({ where: { id: row.id }, data: { attempts: { increment: 1 }, verified: ok } });
+  }
+  if (!ok) {
+    if (fromCookie) await setOtpChallenge({ ...challenge, attempts: attempts + 1 });
+    return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 });
+  }
+  await clearOtpChallenge();
 
   const passwordHash = await hashPassword(password);
   if (kind === "admin") {

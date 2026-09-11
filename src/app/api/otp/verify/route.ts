@@ -4,6 +4,7 @@ import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
 import { indianMobile } from "@/lib/validations";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
+import { clearOtpChallenge, getOtpChallenge, normalizeOtpCode, setOtpChallenge } from "@/lib/otp-challenge";
 
 const secret = new TextEncoder().encode(process.env.AUTH_SECRET || "royal-mobile-tech-dev-secret-change-in-production");
 
@@ -14,25 +15,42 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   const mobile = indianMobile.safeParse(body?.mobile);
-  const code = String(body?.code || "");
+  const code = normalizeOtpCode(body?.code);
   if (!mobile.success || code.length < 4) {
     return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
   }
 
+  const challenge = await getOtpChallenge();
   const row = await prisma.customerOtp.findFirst({
     where: { mobile: mobile.data, verified: false },
     orderBy: { createdAt: "desc" },
   });
-  if (!row || row.expiresAt < new Date() || row.attempts >= 5) {
+  const fromCookie =
+    challenge?.identifier === mobile.data &&
+    Boolean(challenge.codeHash) &&
+    (challenge.purpose === "ORDER" || challenge.channel === "MOBILE");
+  const hash = fromCookie
+    ? challenge.codeHash
+    : row && row.expiresAt >= new Date()
+      ? row.codeHash
+      : "";
+  const attempts = fromCookie ? challenge.attempts : row?.attempts ?? 0;
+  if (!hash || attempts >= 5) {
     return NextResponse.json({ error: "OTP expired. Request a new one." }, { status: 400 });
   }
 
-  const ok = await bcrypt.compare(code, row.codeHash);
-  await prisma.customerOtp.update({
-    where: { id: row.id },
-    data: { attempts: { increment: 1 }, verified: ok },
-  });
-  if (!ok) return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 });
+  const ok = await bcrypt.compare(code, hash);
+  if (row) {
+    await prisma.customerOtp.update({
+      where: { id: row.id },
+      data: { attempts: { increment: 1 }, verified: ok },
+    });
+  }
+  if (!ok) {
+    if (fromCookie) await setOtpChallenge({ ...challenge, attempts: attempts + 1 });
+    return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 });
+  }
+  await clearOtpChallenge();
 
   const token = await new SignJWT({ mobile: mobile.data, purpose: "order" })
     .setProtectedHeader({ alg: "HS256" })

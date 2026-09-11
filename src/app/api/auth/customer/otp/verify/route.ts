@@ -6,6 +6,7 @@ import { indianMobile } from "@/lib/validations";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
 import { upsertVerifiedCustomer } from "@/lib/customer-auth";
 import { recordLoginEvent, recordVisitorEvent } from "@/lib/analytics";
+import { clearOtpChallenge, getOtpChallenge, normalizeOtpCode, setOtpChallenge } from "@/lib/otp-challenge";
 
 export async function POST(req: Request) {
   if (!assertSameOrigin(req)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   const method = body?.method === "email" ? "EMAIL" : "MOBILE";
-  const code = String(body?.code || "");
+  const code = normalizeOtpCode(body?.code);
   const ua = req.headers.get("user-agent") || "";
   let identifier = "";
 
@@ -34,11 +35,24 @@ export async function POST(req: Request) {
     }
   }
 
+  const challenge = await getOtpChallenge();
   const row = await prisma.customerOtp.findFirst({
     where: { identifier, channel: method, purpose: "LOGIN", verified: false },
     orderBy: { createdAt: "desc" },
   });
-  if (!row || row.expiresAt < new Date() || row.attempts >= 5) {
+  const fromCookie =
+    challenge?.identifier === identifier &&
+    challenge.channel === method &&
+    challenge.purpose === "LOGIN" &&
+    Boolean(challenge.codeHash);
+  const hash = fromCookie
+    ? challenge.codeHash
+    : row && row.expiresAt >= new Date()
+      ? row.codeHash
+      : "";
+  const attempts = fromCookie ? challenge.attempts : row?.attempts ?? 0;
+
+  if (!hash || attempts >= 5) {
     await recordLoginEvent({
       loginMethod: method === "EMAIL" ? "EMAIL_OTP" : "MOBILE_OTP",
       loginStatus: "FAILED",
@@ -48,12 +62,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "OTP expired. Request a new one." }, { status: 400 });
   }
 
-  const ok = await bcrypt.compare(code, row.codeHash);
-  await prisma.customerOtp.update({
-    where: { id: row.id },
-    data: { attempts: { increment: 1 }, verified: ok },
-  });
+  const ok = await bcrypt.compare(code, hash);
+  if (row) {
+    await prisma.customerOtp.update({
+      where: { id: row.id },
+      data: { attempts: { increment: 1 }, verified: ok },
+    });
+  }
   if (!ok) {
+    if (fromCookie) {
+      await setOtpChallenge({ ...challenge, attempts: attempts + 1 });
+    }
     await recordLoginEvent({
       loginMethod: method === "EMAIL" ? "EMAIL_OTP" : "MOBILE_OTP",
       loginStatus: "FAILED",
@@ -63,10 +82,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Incorrect OTP" }, { status: 400 });
   }
 
-  await prisma.customerOtp.updateMany({
-    where: { identifier, channel: method, purpose: "LOGIN", verified: false, id: { not: row.id } },
-    data: { verified: true },
-  });
+  await clearOtpChallenge();
+  if (row) {
+    await prisma.customerOtp.updateMany({
+      where: { identifier, channel: method, purpose: "LOGIN", verified: false, id: { not: row.id } },
+      data: { verified: true },
+    });
+  }
 
   const session = await upsertVerifiedCustomer({
     method,

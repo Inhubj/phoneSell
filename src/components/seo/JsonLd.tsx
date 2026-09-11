@@ -11,6 +11,7 @@ export function JsonLd() {
     image: ["/phonesell-logo.jpg", "/opengraph-image"],
     telephone: BUSINESS.phone,
     email: BUSINESS.email,
+    sameAs: [BUSINESS.social.instagram, BUSINESS.social.whatsapp],
     url: process.env.APP_URL || "http://localhost:3000",
     address: {
       "@type": "PostalAddress",
@@ -25,7 +26,7 @@ export function JsonLd() {
       latitude: BUSINESS.geo.lat,
       longitude: BUSINESS.geo.lng,
     },
-    openingHours: "Mo-Su 09:00-21:00",
+    openingHours: "Mo-Su 10:00-22:00",
     areaServed: ["Mumbai", "Thane", "Mira Road", "Bhayandar", "Navi Mumbai"],
     priceRange: "₹₹",
   };

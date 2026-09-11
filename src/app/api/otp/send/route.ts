@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { indianMobile } from "@/lib/validations";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
 import { sendNotification } from "@/lib/notifications";
+import { setOtpChallenge } from "@/lib/otp-challenge";
 
 export async function POST(req: Request) {
   if (!assertSameOrigin(req)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -19,9 +20,19 @@ export async function POST(req: Request) {
   await prisma.customerOtp.create({
     data: {
       mobile: mobile.data,
+      identifier: mobile.data,
+      channel: "MOBILE",
+      purpose: "ORDER",
       codeHash,
       expiresAt: new Date(Date.now() + 10 * 60_000),
     },
+  });
+  await setOtpChallenge({
+    identifier: mobile.data,
+    channel: "MOBILE",
+    purpose: "ORDER",
+    codeHash,
+    attempts: 0,
   });
 
   await sendNotification({

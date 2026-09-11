@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { spawn } from "node:child_process";
+import { syncCatalogPrices } from "./sync-catalog-prices";
 
 async function run() {
   if (process.env.VERCEL !== "1" && process.env.SEED_ON_BUILD !== "1") {
@@ -21,7 +22,8 @@ async function run() {
   try {
     const brands = await prisma.brand.count();
     if (brands > 0) {
-      console.log(`Catalogue already present (${brands} brands). Skipping seed.`);
+      const updated = await syncCatalogPrices(prisma);
+      console.log(`Catalogue already present (${brands} brands). Synced ${updated} variant prices.`);
       return;
     }
   } finally {

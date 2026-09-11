@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { BUSINESS } from "@/lib/constants";
 import { Reveal } from "@/components/ui/Reveal";
+import { ContactChannels } from "@/components/layout/ContactChannels";
 
 export const metadata: Metadata = {
   title: "Contact Us",
-  description: "Contact PhoneSell in Mira Road East, Thane. Call 7068867486 for old phone selling and doorstep pickup.",
+  description: "Contact PhoneSell in Mira Road East, Thane. Call 7068867486 or email Phone0Sell@gmail.com.",
 };
 
 export default function ContactPage() {
@@ -22,6 +23,7 @@ export default function ContactPage() {
           <a href={BUSINESS.telHref} className="mt-6 inline-block text-2xl font-semibold text-navy">
             {BUSINESS.phoneDisplay}
           </a>
+          <ContactChannels />
           <p className="mt-2 text-sm text-muted">{BUSINESS.hours}</p>
           <a
             href={BUSINESS.telHref}

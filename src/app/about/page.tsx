@@ -22,7 +22,7 @@ export default function AboutPage() {
           Every enquiry — model, variant, condition, photos, address and slot — is stored for our operations team so pricing and pickup stay traceable.
         </p>
         <p className="text-sm">
-          {BUSINESS.addressLine1}, {BUSINESS.addressLine2}. Phone {BUSINESS.phoneDisplay}.
+          {BUSINESS.addressLine1}, {BUSINESS.addressLine2}. Phone {BUSINESS.phoneDisplay}. Email {BUSINESS.email}. Instagram @{BUSINESS.social.instagramHandle}.
         </p>
       </div>
       </Reveal>

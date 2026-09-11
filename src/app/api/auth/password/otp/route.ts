@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { indianMobile } from "@/lib/validations";
 import { rateLimit, clientIp, assertSameOrigin } from "@/lib/security";
 import { sendNotification } from "@/lib/notifications";
+import { setOtpChallenge } from "@/lib/otp-challenge";
+
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
   if (!assertSameOrigin(req)) return NextResponse.json({ error: "Invalid origin" }, { status: 403 });
@@ -47,16 +50,19 @@ export async function POST(req: Request) {
   if (!found) return NextResponse.json({ error: "No matching account found" }, { status: 404 });
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
+  const purpose = `PASSWORD_RESET_${kind.toUpperCase()}`;
+  const codeHash = await bcrypt.hash(code, 10);
   await prisma.customerOtp.create({
     data: {
       identifier,
       channel: method,
-      purpose: `PASSWORD_RESET_${kind.toUpperCase()}`,
-      codeHash: await bcrypt.hash(code, 10),
+      purpose,
+      codeHash,
       expiresAt: new Date(Date.now() + 10 * 60_000),
       mobile: method === "MOBILE" ? identifier : "",
     },
   });
+  await setOtpChallenge({ identifier, channel: method, purpose, codeHash, attempts: 0 });
   const mailed = await sendNotification({
     channel: method === "EMAIL" ? "EMAIL" : "SMS",
     eventType: "OTP",

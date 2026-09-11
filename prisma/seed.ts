@@ -333,7 +333,7 @@ async function main() {
         isEnabled: false,
         configJson: JSON.stringify(
           channel === "EMAIL"
-            ? { from: "PhoneSell <ivan.p@example.net>", host: "", port: 587, user: "", pass: "", secure: false }
+            ? { from: "PhoneSell <Phone0Sell@gmail.com>", host: "", port: 587, user: "", pass: "", secure: false }
             : { from: "PhoneSell", businessPhone: "7068867486" },
         ),
       },

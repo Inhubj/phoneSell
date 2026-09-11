@@ -125,8 +125,26 @@ export async function requireAdmin() {
 export async function requireCustomer() {
   const session = await getCustomerSession();
   if (!session) return null;
-  const customer = await prisma.customer.findUnique({ where: { id: session.id } });
-  if (!customer || customer.status !== "ACTIVE") return null;
+  let customer = await prisma.customer.findUnique({ where: { id: session.id } });
+  if (!customer && session.email) {
+    customer = await prisma.customer.findFirst({ where: { email: session.email } });
+  }
+  if (!customer && session.mobile) {
+    customer = await prisma.customer.findFirst({ where: { mobile: session.mobile } });
+  }
+  if (!customer) {
+    customer = await prisma.customer.create({
+      data: {
+        id: session.id,
+        fullName: session.name || "",
+        mobile: session.mobile || "",
+        email: session.email || "",
+        loginMethod: session.email ? "EMAIL" : "MOBILE",
+        status: "ACTIVE",
+      },
+    });
+  }
+  if (customer.status !== "ACTIVE") return null;
   return { session, customer };
 }
 

@@ -6,7 +6,8 @@ export const BUSINESS = {
   phoneDisplay: "7068867486",
   telHref: "tel:7068867486",
   whatsapp: "917068867486",
-  email: "ivan.p@example.net",
+  email: "Phone0Sell@gmail.com",
+  mailto: "mailto:Phone0Sell@gmail.com",
   addressLine1: "Singapore Plaza, Opp. Razzas Mall",
   addressLine2: "Mira Road East, Thane, Maharashtra – 401107",
   area: "Mira Road East",
@@ -14,14 +15,15 @@ export const BUSINESS = {
   state: "Maharashtra",
   pincode: "401107",
   country: "IN",
-  hours: "Mon–Sun, 9:00 AM – 9:00 PM",
+  hours: "Mon–Sun, 10:00 AM – 10:00 PM",
   geo: { lat: 19.2865, lng: 72.8691 },
   mapsUrl:
     "https://www.google.com/maps/search/?api=1&query=Singapore+Plaza+Mira+Road+East+Thane",
   embedMaps:
     "https://maps.google.com/maps?q=Singapore%20Plaza%20Opp.%20Razzas%20Mall%20Mira%20Road%20East%20Thane%20401107&t=&z=15&ie=UTF8&iwloc=&output=embed",
   social: {
-    instagram: "https://www.instagram.com/",
+    instagram: "https://www.instagram.com/phonesell0",
+    instagramHandle: "phonesell0",
     facebook: "https://www.facebook.com/",
     youtube: "https://www.youtube.com/",
     whatsapp: "https://wa.me/917068867486",
